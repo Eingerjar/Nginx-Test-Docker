@@ -1,0 +1,86 @@
+version: '3.0'
+services:
+  nginx:
+    depends_on:
+      - wordpress
+    container_name: nginx
+    image: nginx:${USER}
+    volumes:
+      - wordpress-data:/var/www/html
+    build:
+      context: ./requirements/nginx
+      dockerfile: Dockerfile
+      args:
+        - DOMAIN_NAME=${DOMAIN_NAME}
+        - NGINX_CONF=${NGINX_CONF}
+    ports:
+      - 80:80
+    networks:
+      - docker-network
+    restart: unless-stopped
+  wordpress:
+    depends_on:
+      - mariadb
+    container_name: wordpress
+    image: wordpress:${USER}
+    volumes:
+      - wordpress-data:/var/www/html
+    build:
+      context: ./requirements/wordpress
+      dockerfile: Dockerfile
+      args:
+        - MARIADB_DB_NAME=${MARIADB_DB_NAME}
+        - MARIADB_USER_NAME=${USER}
+        - MARIADB_USER_PASSWD=${MARIADB_USER_PASSWD}
+    networks:
+      - docker-network
+    restart: unless-stopped
+  mariadb:
+    container_name: mariadb
+    image: mariadb:${USER}
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    build:
+      context: ./requirements/mariadb
+      dockerfile: Dockerfile
+      args:
+        - MARIADB_ROOT_PASSWD=${MARIADB_ROOT_PASSWD}
+        - MARIADB_USER_NAME=${USER}
+        - MARIADB_USER_PASSWD=${MARIADB_USER_PASSWD}
+        - MARIADB_DB_NAME=${MARIADB_DB_NAME}
+    networks:
+      - docker-network
+    restart: unless-stopped
+  ftp:
+    depends_on:
+      - wordpress
+    container_name: ftp
+    image: ftp:${USER}
+    volumes:
+      - wordpress-data:/home/${USER}
+    build:
+      context: ./requirements/ftp
+      dockerfile: Dockerfile
+      args:
+        - FTP_USER=${USER}
+        - FTP_USER_PASSWD=${FTP_USER_PASSWD}
+    ports:
+      - 21:21
+      - "30000-30250:30000-30250"
+    networks:
+      - docker-network
+volumes:
+  wordpress-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /Users/${USER}/data/wordpress
+  mariadb-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /Users/${USER}/data/mariadb
+networks:
+  docker-network:
