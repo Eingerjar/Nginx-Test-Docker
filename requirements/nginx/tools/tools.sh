@@ -1,2 +1,3 @@
-openssl req -new -newkey rsa:4096 -x509 -sha256 -days 365 -nodes -subj "/C=${COUNTRY_NAME}/ST=${STATE_NAME}/L=${LOCALITY_NAME}/O=${ORGANIZATION_NAME}/CN=${COMMON_NAME}" -out ${NGINX_CONF}${DOMAIN_NAME}.crt -keyout ${NGINX_CONF}${DOMAIN_NAME}.key
-envsubst '$DOMAIN_NAME' < ${NGINX_CONF}/nginx.template > ${NGINX_CONF}/nginx.conf
+#!/bin/bash
+git -C "/webserv" pull
+exec tail -f /dev/null
