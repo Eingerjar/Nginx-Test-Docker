@@ -1,17 +1,29 @@
 version: '3.0'
 services:
-  nginx:
-    container_name: nginx
-    image: nginx:${USER}
+  webserv:
+    container_name: webserv
+    image: webserv:${USER}
     build:
-      context: ./requirements/nginx
+      context: ./requirements/webserv
       dockerfile: Dockerfile
+    cap_add:
+      - SYS_PTRACE
+    security_opt:
+      - seccomp:unconfined
+    volumes:
+      - webserv-data:/webserv
     ports:
       - 80:80
-      - 22:22
       - "8000-9000:8000-9000"
     networks:
       - docker-network
     restart: unless-stopped
 networks:
   docker-network:
+volumes:
+  webserv-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /Users/${USER}/webserv
